@@ -72,7 +72,7 @@ typedef struct lifo_s
  *
  *@返回：后进先出队列的顶部节点
  **********************************************************/
-#define LIFO_TOP(lifo) SLIST_NODE_NEXT(SLIST_HEAD(&(lifo)->list))
+#define LIFO_TOP(lifo)          SLIST_NODE_NEXT(SLIST_HEAD(&(lifo)->list))
 
 
 /*********************************************************
@@ -86,11 +86,7 @@ typedef struct lifo_s
  *@参数：
  *[lifo]：后进先出队列
  **********************************************************/
-static force_inline void lifo_init(lifo_t *lifo)
-{
-    slist_init(&lifo->list);
-}
-
+#define lifo_init(lifo)         slist_init(&(lifo)->list)
 
 /*********************************************************
  *@简要：
@@ -106,7 +102,7 @@ static force_inline void lifo_init(lifo_t *lifo)
  *[true]：后进先出队列为空
  *[false]：后进先出队列非空
  **********************************************************/
-#define lifo_is_empty(lifo) slist_is_empty(&(lifo)->list)
+#define lifo_is_empty(lifo)     slist_is_empty(&(lifo)->list)
 
 
 /*********************************************************
@@ -121,11 +117,7 @@ static force_inline void lifo_init(lifo_t *lifo)
  *[lifo]：后进先出队列
  *[node]：需要入队的节点
  **********************************************************/
-static force_inline void lifo_push(lifo_t *lifo, slist_node_t *node)
-{
-    slist_node_insert_next(SLIST_HEAD(&lifo->list), node);
-}
-
+#define lifo_push(lifo, node)   slist_node_insert_next(SLIST_HEAD(&(lifo)->list), (node))
 
 /*********************************************************
  *@简要：
@@ -140,11 +132,7 @@ static force_inline void lifo_push(lifo_t *lifo, slist_node_t *node)
  *
  *@返回：出队的节点
  **********************************************************/
-static force_inline slist_node_t* lifo_pop(lifo_t *lifo)
-{
-    return slist_node_del_next(SLIST_HEAD(&lifo->list));
-}
-
+#define lifo_pop(lifo)          slist_node_del_next(SLIST_HEAD(&(lifo)->list))
 
 /*********************************************************
  *@简要：
@@ -159,11 +147,7 @@ static force_inline slist_node_t* lifo_pop(lifo_t *lifo)
  *[node]：后进先出队列中的节点
  *[next_node]：需要插入的节点
  **********************************************************/
-static force_inline void lifo_node_insert_next(slist_node_t *node, slist_node_t *next_node)
-{
-    slist_node_insert_next(node, next_node);
-}
-
+#define lifo_node_insert_next(node, next_node)  slist_node_insert_next((node), (next_node))
 
 /*********************************************************
  *@简要：
@@ -180,11 +164,7 @@ static force_inline void lifo_node_insert_next(slist_node_t *node, slist_node_t 
  *
  *@返回：被移除的节点
  **********************************************************/
-static force_inline slist_node_t* lifo_node_del_next(slist_node_t *node)
-{
-    return slist_node_del_next(node);
-}
-
+#define lifo_node_del_next(node)    slist_node_del_next(node)
 
 /*********************************************************
  *@简要：
@@ -200,11 +180,7 @@ static force_inline slist_node_t* lifo_node_del_next(slist_node_t *node)
  *[true]：成功从队列中移除这个节点
  *[false]：这个节点不在这个队列之中
  **********************************************************/
-static force_inline bool lifo_del_node(lifo_t *lifo, slist_node_t *node)
-{
-    return slist_del_node(&lifo->list, node);
-}
-
+#define lifo_del_node(lifo, node)   slist_del_node(&(lifo)->list, (node))
 
 /*********************************************************
  *@简要：
@@ -219,11 +195,7 @@ static force_inline bool lifo_del_node(lifo_t *lifo, slist_node_t *node)
  *[next_node]: 要插入的下一个节点
  *[safe_node]: 遍历过程中使用的安全节点
  **********************************************************/
-static force_inline void lifo_node_insert_next_safe(slist_node_t *node, slist_node_t *next_node, slist_node_t **safe_node)
-{
-    slist_node_insert_next_safe(node, next_node, safe_node);
-}
-
+#define lifo_node_insert_next_safe(node, next_node, safe_node)  slist_node_insert_next_safe((node), (next_node), (safe_node))
 
 /*********************************************************
  *@简要：
@@ -239,11 +211,7 @@ static force_inline void lifo_node_insert_next_safe(slist_node_t *node, slist_no
  *
  *@返回值: 被移除的下一个节点
  **********************************************************/
-static force_inline slist_node_t *lifo_node_del_next_safe(slist_node_t *node, slist_node_t **safe_node)
-{
-    return slist_node_del_next_safe(node, safe_node);
-}
-
+#define lifo_node_del_next_safe(node, safe_node)   slist_node_del_next_safe((node), (safe_node))
 
 /*********************************************************
  *@简要：
@@ -258,11 +226,7 @@ static force_inline slist_node_t *lifo_node_del_next_safe(slist_node_t *node, sl
  *[true]: 成功从后进先出队列中移除节点
  *[false]: 当前节点不在后进先出队列之中
  **********************************************************/
-static force_inline bool lifo_del_node_safe(lifo_t *lifo, slist_node_t *del_node, slist_node_t **safe_node)
-{
-    return slist_del_node_safe(LIFO_LIST(lifo), del_node, safe_node);
-}
-
+#define lifo_del_node_safe(lifo, del_node, safe_node)   slist_del_node_safe(LIFO_LIST(lifo), (del_node), (safe_node))
 
 /*********************************************************
  *@简要：
@@ -273,9 +237,6 @@ static force_inline bool lifo_del_node_safe(lifo_t *lifo, slist_node_t *del_node
  *[lifo]：被转移的后进先出队列
  *[recv_lifo]: 接收节点的后进先出队列
  **********************************************************/
-static force_inline void lifo_nodes_transfer_to(lifo_t *lifo, lifo_t *recv_lifo)
-{
-    slist_nodes_transfer_to(LIFO_LIST(lifo), LIFO_LIST(recv_lifo));
-}
+#define lifo_nodes_transfer_to(lifo, recv_lifo)         slist_nodes_transfer_to(LIFO_LIST(lifo), LIFO_LIST(recv_lifo))
 
 #endif /* __INCLUDE_LIFO_H__ */
