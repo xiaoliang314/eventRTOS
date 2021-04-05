@@ -3,7 +3,7 @@
 
 #include <bases.h>
 
-/* 时间类型 */
+/* 鏃堕棿绫诲瀷 */
 typedef int64_t    ktime_tick_t;
 typedef int64_t    ktime_us_t;
 typedef int64_t    ktime_ms_t;

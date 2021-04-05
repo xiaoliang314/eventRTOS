@@ -11,24 +11,24 @@ static force_inline int irq_lock(void)
 {
     int key;
 
-	__asm volatile("mrs %0, PRIMASK;"
-		"cpsid i"
-		: "=r" (key)
-		:
-		: "memory");
+    __asm volatile("mrs %0, PRIMASK;"
+        "cpsid i"
+        : "=r" (key)
+        :
+        : "memory");
 
     return key;
 }
 
 static force_inline void irq_unlock(int key)
 {
-	if (key) {
-		return;
-	}
-	__asm__ volatile(
-		"cpsie i;"
-		"isb"
-		: : : "memory");
+    if (key) {
+        return;
+    }
+    __asm__ volatile(
+        "cpsie i;"
+        "isb"
+        : : : "memory");
 }
 
 #endif /* __ARCH_ASM_INLINE_GCC_H__ */

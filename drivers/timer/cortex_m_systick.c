@@ -2,31 +2,31 @@
 #include <drivers/regs_util.h>
 #include <drivers/timer_port.h>
 
-/* systick¶¨Ê±Æ÷×îĞ¡¶¨Ê±Ê±¼ä£¨¼´SysTickÖĞ¶ÏÑÓ³ÙµÄ×î³¤Ê±¼ä£¬µ±Ç°¼ÙÉèÎª16000¸öcycles£© */
+/* systickå®šæ—¶å™¨æœ€å°å®šæ—¶æ—¶é—´ï¼ˆå³SysTickä¸­æ–­å»¶è¿Ÿçš„æœ€é•¿æ—¶é—´ï¼Œå½“å‰å‡è®¾ä¸º16000ä¸ªcyclesï¼‰ */
 #define SYSTICK_MIN_TIMEOUT         (16000)
 
-/* SYSTICK¼Ä´æÆ÷¶¨Òå */
+/* SYSTICKå¯„å­˜å™¨å®šä¹‰ */
 #define SYSTICK_BASE                0xE000E010
 
 /* SYSTICK MAX TIMEOUT */
 #define SYSTICK_MAX_COUNT_CYCLES    BIT(24)
 
-/* SYSTICK CSR¼Ä´æÆ÷¼°×Ö¶Î */
+/* SYSTICK CSRå¯„å­˜å™¨åŠå­—æ®µ */
 #define SYSTICK_R_CSR               REG_ENTITY(0x0000)
 #define SYSTICK_F_COUNTFLAG         REG_FIELD(0x0000, 16, 16)
 #define SYSTICK_F_CLKSOURCE         REG_FIELD(0x0000, 2, 2)
 #define SYSTICK_F_TICKINT           REG_FIELD(0x0000, 1, 1)
 #define SYSTICK_F_ENABLE            REG_FIELD(0x0000, 0, 0)
 
-/* SYSTICK RELOAD¼Ä´æÆ÷ */ 
+/* SYSTICK RELOADå¯„å­˜å™¨ */ 
 #define SYSTICK_R_RELOAD            REG_ENTITY(0x0004)
 #define SYSTICK_F_RELOAD            REG_FIELD(0x0004, 0, 23)
 
-/* SYSTICK CVR¼Ä´æÆ÷ */    
+/* SYSTICK CVRå¯„å­˜å™¨ */    
 #define SYSTICK_R_CVR               REG_ENTITY(0x0008)
 #define SYSTICK_F_CVR               REG_FIELD(0x0008, 0, 23)
 
-/* SYSTICK CALIB¼Ä´æÆ÷ */  
+/* SYSTICK CALIBå¯„å­˜å™¨ */  
 #define SYSTICK_R_CALIB             REG_ENTITY(0x000C)
 #define SYSTICK_F_NOREF             REG_FIELD(0x000C, 31, 31)
 #define SYSTICK_F_SKEW              REG_FIELD(0x000C, 30, 30)
@@ -45,7 +45,7 @@ static struct drv_systick_ctx_s drv_ctx;
 
 void cortex_m_systick_init(void)
 {
-    /* ³õÊ¼»¯Systick */
+    /* åˆå§‹åŒ–Systick */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD, SYSTICK_MAX_COUNT_CYCLES - 1);
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_CVR, 0);
 
@@ -54,8 +54,8 @@ void cortex_m_systick_init(void)
                                  SYSTICK_F_TICKINT, 1,
                                  SYSTICK_F_ENABLE, 1);
 
-    /* ÒòÎªSystickµÄCOUNTÏòÏÂ¼ÆÊı£¬Êµ¼Ê¾­¹ıµÄÊ±¼äÎªoverflow + RELOAD - COUNT£¬
-     * Òò´Ë£¬ÎÒÃÇ½«RELOAD¼ÆÈëoverflowÒÔ¼õÉÙ¶àÓàµÄÔËËã
+    /* å› ä¸ºSystickçš„COUNTå‘ä¸‹è®¡æ•°ï¼Œå®é™…ç»è¿‡çš„æ—¶é—´ä¸ºoverflow + RELOAD - COUNTï¼Œ
+     * å› æ­¤ï¼Œæˆ‘ä»¬å°†RELOADè®¡å…¥overflowä»¥å‡å°‘å¤šä½™çš„è¿ç®—
      */
     drv_ctx.overflow = SYSTICK_MAX_COUNT_CYCLES;
 }
@@ -68,16 +68,16 @@ ktime_tick_t drv_ktime_tick_get(void)
 
     int key = irq_lock();
 
-    /* ÒÔÁ½´Î¶ÁÈ¡cvrµÄÖµÈ·±£countflagÓëcvrÖ®¼äµÄÒ»ÖÂĞÔ */
+    /* ä»¥ä¸¤æ¬¡è¯»å–cvrçš„å€¼ç¡®ä¿countflagä¸cvrä¹‹é—´çš„ä¸€è‡´æ€§ */
     cvr1 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
     countflag = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_F_COUNTFLAG);
     cvr2 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
 
     overflow = drv_ctx.overflow;
 
-    /* ¼ÆÊıÆ÷Òç³ö¼ì²â */
+    /* è®¡æ•°å™¨æº¢å‡ºæ£€æµ‹ */
     if (cvr2 > cvr1 || countflag) {
-        /* ¶ÁÈ¡CSR¼Ä´æÆ÷Çå³ıCOUNTFLAG */
+        /* è¯»å–CSRå¯„å­˜å™¨æ¸…é™¤COUNTFLAG */
         (void)REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CSR);
 
         reload = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD);
@@ -97,22 +97,22 @@ static void systick_reset_reload(uint32_t reload)
     uint32_t old_reload;
     ktime_tick_t overflow;
 
-    /* ±£´æ¾ÉµÄreloadÖµÓÃÓÚÍÆËãµ±Ç°Ê±¼ä */
+    /* ä¿å­˜æ—§çš„reloadå€¼ç”¨äºæ¨ç®—å½“å‰æ—¶é—´ */
     old_reload = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD);
-    /* ÉèÖÃĞÂµÄreload×÷Îª³¬Ê±Ê±¼ä */
+    /* è®¾ç½®æ–°çš„reloadä½œä¸ºè¶…æ—¶æ—¶é—´ */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD, reload - 1);
 
-    /* ¶ÁÈ¡ÏÈÇ°CVRµÄ×´Ì¬£¬²¢ÇåÁã¿ªÆôĞÂµÄreload³¬Ê± */
+    /* è¯»å–å…ˆå‰CVRçš„çŠ¶æ€ï¼Œå¹¶æ¸…é›¶å¼€å¯æ–°çš„reloadè¶…æ—¶ */
     cvr1 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
     countflag = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_F_COUNTFLAG);
     cvr2 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
-    /* ÉèÖÃÈÎÒâÖµ½«CVRÇåÁã */
+    /* è®¾ç½®ä»»æ„å€¼å°†CVRæ¸…é›¶ */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_CVR, cvr2);
 
-    /* ¶ÁÈ¡CSR¼Ä´æÆ÷È·±£Çå³ıCOUNTFLAG */
+    /* è¯»å–CSRå¯„å­˜å™¨ç¡®ä¿æ¸…é™¤COUNTFLAG */
     (void)REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CSR);
 
-    /* ÍÆËãÉèÖÃreloadÇ°¾­¹ıµÄÊ±¼ä */
+    /* æ¨ç®—è®¾ç½®reloadå‰ç»è¿‡çš„æ—¶é—´ */
     overflow = drv_ctx.overflow;
     if (cvr2 > cvr1 || countflag) {
         overflow += old_reload + 1;
@@ -120,8 +120,8 @@ static void systick_reset_reload(uint32_t reload)
 
     overflow -= cvr2;
 
-    /* ¼ÆÈëĞÂµÄRELOAD
-     * ĞÂµÄ³¬Ê±ÔÚCVRÇåÁãÊ±ÉúĞ§£¬ÔÚcvr2ÓëCVRÇåÁãÖ®¼äÓĞ2¸öcyclesµÄÑÓÊ±£¬½«ÆäÒ»Æğ¼ÆÈë
+    /* è®¡å…¥æ–°çš„RELOAD
+     * æ–°çš„è¶…æ—¶åœ¨CVRæ¸…é›¶æ—¶ç”Ÿæ•ˆï¼Œåœ¨cvr2ä¸CVRæ¸…é›¶ä¹‹é—´æœ‰2ä¸ªcyclesçš„å»¶æ—¶ï¼Œå°†å…¶ä¸€èµ·è®¡å…¥
      */
     overflow += reload + 2;
 
@@ -136,19 +136,19 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
 
     key = irq_lock();
 
-    /* ÎŞ³¬Ê± */
+    /* æ— è¶…æ—¶ */
     if (expiry == 0) {
         reload = SYSTICK_MAX_COUNT_CYCLES;
         drv_ctx.expiry = INT64_MAX;
     }
-    /* ÉèÖÃ³¬Ê±Ê±¼ä */
+    /* è®¾ç½®è¶…æ—¶æ—¶é—´ */
     else {
         now = drv_ktime_tick_get();
         timeout = expiry - now;
         drv_ctx.expiry = expiry;
 
-        /* Èô³¬Ê±Ê±¼äĞ¡ÓÚ128¸öcyclesÊ±¼ä£¬ÔòÁ¢¼´´¥·¢³¬Ê±
-         * 128¸öcycles±£Ö¤Êµ¼Ê´¥·¢Ê±¿ÌÒÑ¾­³¬Ê±ÉèÖÃµÄµ½ÆÚÖµ
+        /* è‹¥è¶…æ—¶æ—¶é—´å°äº128ä¸ªcyclesæ—¶é—´ï¼Œåˆ™ç«‹å³è§¦å‘è¶…æ—¶
+         * 128ä¸ªcyclesä¿è¯å®é™…è§¦å‘æ—¶åˆ»å·²ç»è¶…æ—¶è®¾ç½®çš„åˆ°æœŸå€¼
          */
         if (timeout < 128) {
             /* Pending Systick IRQ */
@@ -173,7 +173,7 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
     irq_unlock(key);
 }
 
-/* SystickÖĞ¶Ï */
+/* Systickä¸­æ–­ */
 void SysTick_Handler(void)
 {
     ktime_tick_t now, expiry, timeout;
@@ -181,13 +181,13 @@ void SysTick_Handler(void)
 
     key = irq_lock();
 
-    /* ¼ÆËã³¬Ê±Ê±¼ä */
+    /* è®¡ç®—è¶…æ—¶æ—¶é—´ */
     expiry = drv_ctx.expiry;
     now = drv_ktime_tick_get();
     timeout = expiry - now;
 
     if (timeout > 0) {
-        /* µ±timeoutĞ¡ÓÚ¿Ésystick¿É¼ÆÊıµÄÊ±¼äÊ±£¬ÔòÉèÖÃreload */
+        /* å½“timeoutå°äºå¯systickå¯è®¡æ•°çš„æ—¶é—´æ—¶ï¼Œåˆ™è®¾ç½®reload */
         if (timeout <= SYSTICK_MAX_COUNT_CYCLES) {
             systick_reset_reload((uint32_t)timeout);
         }
@@ -198,6 +198,6 @@ void SysTick_Handler(void)
 
     irq_unlock(key);
 
-    /* ´¦Àí³¬Ê± */
+    /* å¤„ç†è¶…æ—¶ */
     sys_ktimer_timeout_check(now);
 }

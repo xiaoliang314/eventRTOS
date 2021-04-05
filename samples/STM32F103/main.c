@@ -3,7 +3,7 @@
 #include <drivers/regs_util.h>
 #include "stm32f10x.h"
 
-/* RCCÍâÉè¸´Î»¼Ä´æÆ÷×Ö¶Î¶¨Òå */
+/* RCCå¤–è®¾å¤ä½å¯„å­˜å™¨å­—æ®µå®šä¹‰ */
 #define RCC_R_APB2RSTR              REG_ENTITY(0x000C)
 #define RCC_F_APB2RSTR_AFIOEN       REG_FIELD(0x000C, 0, 0)
 #define RCC_F_APB2RSTR_IOPAEN       REG_FIELD(0x000C, 2, 2)
@@ -11,7 +11,7 @@
 #define RCC_F_APB2RSTR_IOPCEN       REG_FIELD(0x000C, 4, 4)
 #define RCC_F_APB2RSTR_IOPDEN       REG_FIELD(0x000C, 5, 5)
 
-/* RCCÍâÉèÊ¹ÄÜ¼Ä´æÆ÷×Ö¶Î¶¨Òå */
+/* RCCå¤–è®¾ä½¿èƒ½å¯„å­˜å™¨å­—æ®µå®šä¹‰ */
 #define RCC_R_APB2ENR               REG_ENTITY(0x0018)
 #define RCC_F_APB2ENR_AFIOEN        REG_FIELD(0x0018, 0, 0)
 #define RCC_F_APB2ENR_IOPAEN        REG_FIELD(0x0018, 2, 2)
@@ -19,7 +19,7 @@
 #define RCC_F_APB2ENR_IOPCEN        REG_FIELD(0x0018, 4, 4)
 #define RCC_F_APB2ENR_IOPDEN        REG_FIELD(0x0018, 5, 5)
 
-/* GPIOÄ£Ê½×Ö¶Î¶¨Òå */
+/* GPIOæ¨¡å¼å­—æ®µå®šä¹‰ */
 #define GPIO_F_PIN0_MODE            REG_FIELD(0x0000,  0, 1)
 #define GPIO_F_PIN1_MODE            REG_FIELD(0x0000,  4, 5)
 #define GPIO_F_PIN2_MODE            REG_FIELD(0x0000,  8, 9)
@@ -43,7 +43,7 @@
 #define GPIO_PIN_MODE_OUT_2MHZ      2
 #define GPIO_PIN_MODE_OUT_50MHZ     3
 
-/* GPIOÅäÖÃ×Ö¶Î¶¨Òå */
+/* GPIOé…ç½®å­—æ®µå®šä¹‰ */
 #define GPIO_F_PIN0_CFG             REG_FIELD(0x0000,  2, 3)
 #define GPIO_F_PIN1_CFG             REG_FIELD(0x0000,  6, 7)
 #define GPIO_F_PIN2_CFG             REG_FIELD(0x0000, 10, 11)
@@ -71,7 +71,7 @@
 #define GPIO_PIN_CFG_OUT_AF_PULL    2
 #define GPIO_PIN_CFG_OUT_AF_NOPULL  3
 
-/* GPIOÊäÈë×Ö¶Î¶¨Òå */
+/* GPIOè¾“å…¥å­—æ®µå®šä¹‰ */
 #define GPIO_F_PIN0_IN              REG_FIELD(0x0008,  0, 0)
 #define GPIO_F_PIN1_IN              REG_FIELD(0x0008,  1, 1)
 #define GPIO_F_PIN2_IN              REG_FIELD(0x0008,  2, 2)
@@ -89,7 +89,7 @@
 #define GPIO_F_PIN14_IN             REG_FIELD(0x0008, 14, 14)
 #define GPIO_F_PIN15_IN             REG_FIELD(0x0008, 15, 15)
 
-/* GPIOÊä³ö×Ö¶Î¶¨Òå */
+/* GPIOè¾“å‡ºå­—æ®µå®šä¹‰ */
 #define GPIO_F_PIN0_OUT              REG_FIELD(0x000C,  0, 0)
 #define GPIO_F_PIN1_OUT              REG_FIELD(0x000C,  1, 1)
 #define GPIO_F_PIN2_OUT              REG_FIELD(0x000C,  2, 2)
@@ -107,7 +107,7 @@
 #define GPIO_F_PIN14_OUT             REG_FIELD(0x000C, 14, 14)
 #define GPIO_F_PIN15_OUT             REG_FIELD(0x000C, 15, 15)
 
-/* GPIOÎ»ÉèÖÃ/Çå³ı×Ö¶Î¶¨Òå */
+/* GPIOä½è®¾ç½®/æ¸…é™¤å­—æ®µå®šä¹‰ */
 #define GPIO_F_PIN0_SET              REG_FIELD(0x0010,  0, 0)
 #define GPIO_F_PIN1_SET              REG_FIELD(0x0010,  1, 1)
 #define GPIO_F_PIN2_SET              REG_FIELD(0x0010,  2, 2)
@@ -145,7 +145,7 @@
 #define LED0_OUT                     GPIO_F_PIN2_OUT
 #define LED1_OUT                     GPIO_F_PIN8_OUT
 
-/* LEDÉÁË¸¶¨Ê±Æ÷£ºÆµÂÊ10Hz */
+/* LEDé—ªçƒå®šæ—¶å™¨ï¼šé¢‘ç‡10Hz */
 static void on_led1_timer(void *cb_data, kevent_t *e)
 {
     ktimer_event_t *timer = (ktimer_event_t*)e;
@@ -154,13 +154,13 @@ static void on_led1_timer(void *cb_data, kevent_t *e)
     bpd_begin(2);
 
     while (1) {
-        /* ´ò¿ªLED */
+        /* æ‰“å¼€LED */
         REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 1);
 
         ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(100));
         bpd_yield(1);
 
-        /* ¹Ø±ÕLED */
+        /* å…³é—­LED */
         REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 0);
 
         ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(100));
@@ -170,7 +170,7 @@ static void on_led1_timer(void *cb_data, kevent_t *e)
     bpd_end();
 }
 
-/* LEDÉÁË¸¶¨Ê±Æ÷£ºÆµÂÊ2Hz */
+/* LEDé—ªçƒå®šæ—¶å™¨ï¼šé¢‘ç‡2Hz */
 static void on_led0_timer(void *cb_data, kevent_t *e)
 {
     ktimer_event_t *timer = (ktimer_event_t*)e;
@@ -179,13 +179,13 @@ static void on_led0_timer(void *cb_data, kevent_t *e)
     bpd_begin(2);
 
     while (1) {
-        /* ´ò¿ªLED */
+        /* æ‰“å¼€LED */
         REG_WRITE_FIELD(GPIOD_BASE, LED0_OUT, 0);
 
         ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(500));
         bpd_yield(1);
 
-        /* ¹Ø±ÕLED */
+        /* å…³é—­LED */
         REG_WRITE_FIELD(GPIOD_BASE, LED0_OUT, 1);
 
         ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(500));
@@ -195,20 +195,20 @@ static void on_led0_timer(void *cb_data, kevent_t *e)
     bpd_end();
 }
 
-/* ¶¨ÒåÁ½¸ö¶¨Ê±Æ÷ */
+/* å®šä¹‰ä¸¤ä¸ªå®šæ—¶å™¨ */
 static ktimer_event_t led0_timer = KTIMER_EVENT_STATIC_INIT(led0_timer, on_led0_timer, 0, KEVENT_PRIORITY_LOWER_GROUP);
 static ktimer_event_t led1_timer = KTIMER_EVENT_STATIC_INIT(led1_timer, on_led1_timer, 0, KEVENT_PRIORITY_LOWER_GROUP);
 
 int main()
 {
-    /* ³õÊ¼»¯systickÇı¶¯ */
+    /* åˆå§‹åŒ–systické©±åŠ¨ */
     cortex_m_systick_init();
 
-    /* ´ò¿ªGPIO ABCDÃÅ¿Ø */
+    /* æ‰“å¼€GPIO ABCDé—¨æ§ */
     REG_WRITE_FIELDS(RCC_BASE, RCC_F_APB2ENR_IOPAEN, 1,
                                RCC_F_APB2ENR_IOPDEN, 1);
 
-    /* ÅäÖÃÎªÊä³öÍÆÃâÄ£Ê½ */
+    /* é…ç½®ä¸ºè¾“å‡ºæ¨å…æ¨¡å¼ */
     REG_WRITE_FIELDS(GPIOD_BASE, 
                             GPIO_F_PIN2_MODE, GPIO_PIN_MODE_OUT_50MHZ,
                             GPIO_F_PIN2_CFG,  GPIO_PIN_CFG_OUT_PULL);
@@ -217,7 +217,7 @@ int main()
                             GPIO_F_PIN8_MODE, GPIO_PIN_MODE_OUT_50MHZ,
                             GPIO_F_PIN8_CFG,  GPIO_PIN_CFG_OUT_PULL);
 
-    /* Æô¶¯LEDÉÁË¸¶¨Ê±Æ÷ */
+    /* å¯åŠ¨LEDé—ªçƒå®šæ—¶å™¨ */
     ktimer_start_ms(&led0_timer, 300);
     ktimer_start_ms(&led1_timer, 300);
 

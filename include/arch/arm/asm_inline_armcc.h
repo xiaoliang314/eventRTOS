@@ -11,7 +11,7 @@ static force_inline int irq_lock(void)
 {
     int key;
 
-	__asm volatile("mrs key, PRIMASK");
+    __asm volatile("mrs key, PRIMASK");
     __disable_irq();
 
     return key;
@@ -19,9 +19,9 @@ static force_inline int irq_lock(void)
 
 static force_inline void irq_unlock(int key)
 {
-	if (key) {
-		return;
-	}
+    if (key) {
+        return;
+    }
 
     __enable_irq();
 }

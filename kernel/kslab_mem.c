@@ -9,18 +9,18 @@ void kslab_mem_init(kslab_mem_t *slab, void *buff, uint32_t blk_nums, uint32_t b
     uint8_t *free_node;
     uint32_t i;
 
-	fifo_init(&slab->wait_q);
+    fifo_init(&slab->wait_q);
 
-	/* 初始化空闲块链表 */
-	lifo_init(&slab->free_list);
+    /* 初始化空闲块链表 */
+    lifo_init(&slab->free_list);
 
-	/* generates a free block list */
-	/* 生成空闲块链表 */
-	free_node = buff;
-	for (i = 0; i < blk_nums; i++) {
-		lifo_push(&slab->free_list, (slist_node_t *)free_node);
-		free_node += blk_size;
-	}
+    /* generates a free block list */
+    /* 生成空闲块链表 */
+    free_node = buff;
+    for (i = 0; i < blk_nums; i++) {
+        lifo_push(&slab->free_list, (slist_node_t *)free_node);
+        free_node += blk_size;
+    }
 }
 
 void kslab_mem_wait(kslab_mem_t *slab, kslab_event_t *slab_event)
