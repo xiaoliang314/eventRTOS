@@ -1,0 +1,210 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 PRESERVE8
+    2 00000000                 THUMB
+    3 00000000         
+    4 00000000                 AREA             |.text|, CODE, READONLY
+    5 00000000         
+    6 00000000         PendSV_Handler
+                               PROC
+    7 00000000                 IMPORT           kevent_schedule
+    8 00000000                 EXPORT           PendSV_Handler
+    9 00000000         
+   10 00000000         ;PendSV“Ï≥£¥¶¿Ì≥Ã–ÚÕ®π˝≤Â»ÎŒ±‘Ïµƒ“Ï≥£∑µªÿ…œœ¬Œƒ µœ÷«¿’º±
+                       ª÷–∂œµƒœﬂ≥ÃµƒCPU
+   11 00000000         ;≤¢‘⁄«¿’ºΩ· ¯∫Û ÷∂Øµƒªÿ∏¥±ª÷–∂œœﬂ≥Ãµƒ…œœ¬Œƒ
+   12 00000000         
+   13 00000000         ;µ±∑¢…˙“Ï≥£ ±£¨µ±«∞µƒLR”Î±ª—π’ªµƒxPSR÷∏ æ¡À±ª÷–∂œµƒœﬂ≥Ãƒ
+                       ≥–©≈‰÷√∫Õ◊¥Ã¨£¨
+   14 00000000         ;LR:
+   15 00000000         ;BIT3: µ±’‚∏ˆŒª±ª…Ë÷√ ±£¨÷∏ æ“Ï≥£∑µªÿµΩThreadƒ£ Ω£¨∑Ò‘Ú∑
+                       µªÿµΩHandlerƒ£ Ω£¨PendSV“Ï≥£∑¢…˙ ±£¨’‚∏ˆŒª”¶∏√Œ™1
+   16 00000000         ;BIT2: µ±’‚∏ˆŒª±ª…Ë÷√ ±£¨÷∏ æ“Ï≥£∑µªÿ π”√PSPª÷∏¥œﬂ≥Ã…œœ¬
+                       Œƒ£¨∑Ò‘Ú π”√MSP
+   17 00000000         ;
+   18 00000000         ;“——π’ªµƒxPSR:
+   19 00000000         ;BIT24: µ±’‚∏ˆŒª±ª…Ë÷√ ±£¨“Ï≥£∑µªÿ∫ÛΩ¯»ÎThumbƒ£ Ω£¨∑Ò‘Ú∑
+                       µªÿµΩARMƒ£ Ω
+   20 00000000         ;BIT9: µ±’‚∏ˆŒª±ª…Ë÷√ ±£¨±Ì æ’ª“—ø™∆Ù8Byte∂‘∆Î£¨≤¢÷∏ æ‘⁄
+                       µØ≥ˆœﬂ≥Ã…œœ¬Œƒ∫ÛSP+4
+   21 00000000         
+   22 00000000         ;±∏∑›LRµƒ◊¥Ã¨
+   23 00000000 4670            MOV              R0, LR
+   24 00000002         
+   25 00000002         ;Œ“√«–Ë“™≤Â»Î“Ï≥£∑µªÿœ÷≥°–Ë“™ π”√µƒø’º‰£¨≤¢ªÒ»°À¸µƒ’ª∂•
+   26 00000002         
+   27 00000002         ;ºÏ≤ÈLR BIT2»∑∂®“Ï≥£∑µªÿ π”√PSPªπ «MSP
+   28 00000002 0741            LSLS             R1, R0, #29
+   29 00000004 D402            BMI              INSERT_FAKE_EXC_RETURN_CONTEXT_
+SPACE_USE_PSP
+   30 00000006         
+   31 00000006         ;“ÚŒ™µ±«∞¥¶”⁄Handlerƒ£ Ω£¨“Ú¥ÀŒ“√«ø…“‘÷±Ω” π”√SP¿¥≤Ÿ◊˜MS
+                       P
+   32 00000006 B088            SUB              SP, #32
+   33 00000008 466A            MOV              R2, SP
+   34 0000000A E004            B                INSERT_FAKE_EXC_RETURN_CONTEXT_
+SPACE_ENDIF
+   35 0000000C         
+   36 0000000C         INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_USE_PSP
+   37 0000000C         ;‘⁄Handlerƒ£ Ωœ¬£¨–Ë“™ π”√MRS”ÎMSR÷∏¡Ó≤Ÿ◊˜PSP
+   38 0000000C F3EF 8209       MRS              R2, PSP
+   39 00000010 3A20            SUBS             R2, #32
+   40 00000012 F382 8809       MSR              PSP, R2
+   41 00000016         INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_ENDIF
+   42 00000016         
+   43 00000016         ;Œ“√«…Ë÷√∂—’ª÷–∑µªÿ∫ÛµƒŒª÷√Œ™PENDSV_EXCRETURNHANDLER
+   44 00000016 A005            ADR              R0, PENDSV_EXC_RETURN_HANDLER
+   45 00000018 6190            STR              R0, [R2, #24]
+   46 0000001A         
+   47 0000001A         ;Œ“√«…Ë÷√∂—’ª÷–xPSR£¨ π“Ï≥£∑µªÿ∫ÛΩ¯»ÎThumbƒ£ Ω≤¢ª÷∏¥“‘«∞
+                       µƒIPSR◊¥Ã¨
+   48 0000001A 2101            MOVS             R1, #1
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   49 0000001C 0609            LSLS             R1, #24
+   50 0000001E         ;∂¡»°∑µªÿ…œœ¬Œƒ÷–µƒIPSR
+   51 0000001E 6BD0            LDR              R0, [R2, #60]
+   52 00000020 0680            LSLS             R0, #26
+   53 00000022 0E80            LSRS             R0, #26
+   54 00000024         ;…Ë÷√xPSRŒ™BIT24 + IPSR
+   55 00000024 4301            ORRS             R1, R0
+   56 00000026 61D1            STR              R1, [R2, #28]
+   57 00000028         
+   58 00000028         ;“Ï≥£∑µªÿ£¨Ω¯»ÎPENDSV_EXCRETURNHANDLER
+   59 00000028 4770            BX               LR
+   60 0000002A BF00            NOP
+   61 0000002C         PENDSV_EXC_RETURN_HANDLER
+   62 0000002C         ;µ˜”√µ˜∂»≥Ã–Ú
+   63 0000002C F7FF FFFE       BL               kevent_schedule
+   64 00000030         
+   65 00000030         ;µ±«¿’º≥Ã–Ú÷¥––Ω· ¯÷Æ∫Û£¨Œ“√«–Ë“™ª÷∏¥«¿’º«∞µƒ…œœ¬Œƒ
+   66 00000030         ;Œ“√«ªπ–Ë“™ºÏ≤ÈxPSRµƒBIT9£¨»∑∂®ª÷∏¥÷Æ∫Ûµƒ’ª∂•Œª÷√
+   67 00000030         
+   68 00000030         ;Œ“√«Ω´R3÷∏œÚœﬂ≥Ãª÷∏¥∫Û’ª∂•µƒ«∞¡Ω∏ˆ◊÷µƒŒª÷√£¨”√”⁄¥Ê∑≈R4”
+                       ÎPC
+   69 00000030 AB06            ADD              R3, SP, #24
+   70 00000032         
+   71 00000032         ;∂¡»°xPSR
+   72 00000032 9807            LDR              R0, [SP, #28]
+   73 00000034         
+   74 00000034         ;≈–∂œxPSRµƒBIT9£¨»Ù÷√Œª‘Ú’ª∂•–Ë“™+4
+   75 00000034 0581            LSLS             R1, R0, #22
+   76 00000036 0FC9            LSRS             R1, #31
+   77 00000038 0089            LSLS             R1, #2
+   78 0000003A 185B            ADDS             R3, R1
+   79 0000003C         
+   80 0000003C         ;∂¡»°œﬂ≥ÃµƒPC£¨≤¢∏˘æ›xPSRµƒBIT24…Ë÷√ThumbªÚ’ﬂARMƒ£ Ω
+   81 0000003C 9906            LDR              R1, [SP, #24]
+   82 0000003E 01C2            LSLS             R2, R0, #7
+   83 00000040 0FD2            LSRS             R2, #31
+   84 00000042 4311            ORRS             R1, R2
+   85 00000044         
+   86 00000044         ;Œ“√«◊‹ «–Ë“™‘⁄R0-R12£¨LR£¨SPª÷∏¥÷Æ∫Û≤≈ƒ‹÷¥––∑µªÿ
+   87 00000044         ;¥À ±£¨Œ“√«√ª”–ø…“‘ π”√µƒºƒ¥Ê∆˜±£¥ÊPC£¨
+   88 00000044         ;“Ú¥À–Ë“™Ω´PC¥Ê»Î’ª÷–£¨ π”√POP÷∏¡ÓΩ¯––ª÷∏¥
+   89 00000044         ;Õ¨ ±Œ“√«“≤Œﬁ∑®‘⁄ª÷∏¥R0-R3÷Æ∫Û£¨‘Ÿ±£¥Ê’ª∂•µƒŒª÷√
+   90 00000044         ;“Ú¥ÀŒ“√«±ÿ–Î π”√R4º«¬º’ª∂•£¨“Ú¥Àªπ–Ë“™∂‘R4◊ˆ±£¥Ê
+   91 00000044 6059            STR              R1, [R3, #4]
+   92 00000046 601C            STR              R4, [R3, #0]
+   93 00000048 461C            MOV              R4, R3
+   94 0000004A         
+   95 0000004A         ;ª÷∏¥R12£¨LR£¨xPSR
+   96 0000004A         ;Œ™¡ÀºÊ»›M0£¨Œ“√«≤ª π”√LDRD÷∏¡Ó¿¥ª÷∏¥R12”ÎLR
+   97 0000004A F380 8803       MSR              xPSR, R0
+   98 0000004E A804            ADD              R0, SP, #16
+   99 00000050 C806            LDM              R0!, {R1-R2}
+  100 00000052 468C            MOV              R12, R1
+  101 00000054 4696            MOV              LR, R2
+  102 00000056         
+  103 00000056         ;ª÷∏¥R0-R3£¨SP
+  104 00000056 BC0F            POP              {R0-R3}
+  105 00000058 46A5            MOV              SP, R4
+  106 0000005A         
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+  107 0000005A         ;∑µªÿ±ª«¿’ºµƒœﬂ≥Ã
+  108 0000005A BD10            POP              {R4, PC}
+  109 0000005C         
+  110 0000005C                 ENDP
+  111 0000005C                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
+ork --depend=.\objects\preemption_nofp.d -o.\objects\preemption_nofp.o -IH:\–¬π
+§◊˜\eventRTOS\samples\MDK\RTE -ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\De
+vice\Include -ID:\Keil_v5\ARM\CMSIS\Include --predefine="__UVISION_VERSION SETA
+ 514" --predefine="STM32F10X_LD_VL SETA 1" --list=.\listings\preemption_nofp.ls
+t ..\..\arch\cortex-m\armcc\preemption_nofp.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 4 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      None
+Comment: .text unused
+INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_ENDIF 00000016
+
+Symbol: INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_ENDIF
+   Definitions
+      At line 41 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      At line 34 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+Comment: INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_ENDIF used once
+INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_USE_PSP 0000000C
+
+Symbol: INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_USE_PSP
+   Definitions
+      At line 36 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      At line 29 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+Comment: INSERT_FAKE_EXC_RETURN_CONTEXT_SPACE_USE_PSP used once
+PENDSV_EXC_RETURN_HANDLER 0000002C
+
+Symbol: PENDSV_EXC_RETURN_HANDLER
+   Definitions
+      At line 61 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      At line 44 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+Comment: PENDSV_EXC_RETURN_HANDLER used once
+PendSV_Handler 00000000
+
+Symbol: PendSV_Handler
+   Definitions
+      At line 6 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      At line 8 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+Comment: PendSV_Handler used once
+5 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+kevent_schedule 00000000
+
+Symbol: kevent_schedule
+   Definitions
+      At line 7 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+   Uses
+      At line 63 in file ..\..\arch\cortex-m\armcc\preemption_nofp.s
+Comment: kevent_schedule used once
+1 symbol
+338 symbols in table
