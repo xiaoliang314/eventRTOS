@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2021 xiaoliang<1296283984@qq.com>.
+ */
+
                         .thumb
                         .syntax     unified
                         .text
