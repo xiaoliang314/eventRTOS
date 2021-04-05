@@ -9,6 +9,7 @@
 #include <os/ktimer.h>
 #include <os/slab_mem.h>
 #include <os/ktask_co.h>
+#include <os/kmsg_queue.h>
 #include <arch/irq.h>
 #include <bp.h>
 
