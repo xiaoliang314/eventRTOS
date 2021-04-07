@@ -91,21 +91,30 @@ ktime_tick_t drv_ktime_tick_get(void)
     return overflow - cvr2;
 }
 
-static void systick_reset_reload(uint32_t reload)
+static void systick_reset_reload(uint32_t reload, uint32_t old_cvr)
 {
     uint32_t cvr1, cvr2, countflag;
     uint32_t old_reload;
+    uint32_t diff_cvr, fix_reload;
     ktime_tick_t overflow;
 
     /* 保存旧的reload值用于推算当前时间 */
     old_reload = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD);
-    /* 设置新的reload作为超时时间 */
-    REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD, reload - 1);
 
     /* 读取先前CVR的状态，并清零开启新的reload超时 */
     cvr1 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
     countflag = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_F_COUNTFLAG);
     cvr2 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
+    /* 以当前读取的CVR为基准调整reload，稳定耗时6个cycles左右 */
+    diff_cvr = old_cvr - cvr2;
+    fix_reload = diff_cvr >> 31;
+    fix_reload *= old_reload;
+    reload -= diff_cvr;
+    reload -= 1;
+    reload += fix_reload;
+
+    /* 设置新的reload作为超时时间，稳定耗时2cycles */
+    REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD, reload);
     /* 设置任意值将CVR清零 */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_CVR, cvr2);
 
@@ -121,9 +130,9 @@ static void systick_reset_reload(uint32_t reload)
     overflow -= cvr2;
 
     /* 计入新的RELOAD
-     * 新的超时在CVR清零时生效，在cvr2与CVR清零之间有2个cycles的延时，将其一起计入
+     * 新的超时在CVR清零时生效，在cvr2与CVR清零之间有8个cycles的延时，将其一起计入
      */
-    overflow += reload + 2;
+    overflow += reload + 8;
 
     drv_ctx.overflow = overflow;
 }
@@ -132,6 +141,7 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
 {
     int key;
     uint32_t reload;
+    uint32_t cvr;
     ktime_tick_t timeout, now;
 
     key = irq_lock();
@@ -140,17 +150,19 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
     if (expiry == 0) {
         reload = SYSTICK_MAX_COUNT_CYCLES;
         drv_ctx.expiry = INT64_MAX;
+        cvr = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
     }
     /* 设置超时时间 */
     else {
         now = drv_ktime_tick_get();
+        cvr = drv_ctx.overflow - now;
         timeout = expiry - now;
         drv_ctx.expiry = expiry;
 
         /* 若超时时间小于128个cycles时间，则立即触发超时
-         * 128个cycles保证实际触发时刻已经超时设置的到期值
+         * 80个cycles保证实际触发时刻已经超时设置的到期值
          */
-        if (timeout < 128) {
+        if (timeout < 80) {
             /* Pending Systick IRQ */
             REG_WRITE_ENTITY(CORTEX_M_ICSR, CORTEX_SYSTICK_IRQ_PENDSET);
             irq_unlock(key);
@@ -168,7 +180,7 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
         }
     }
 
-    systick_reset_reload(reload);
+    systick_reset_reload(reload, cvr);
 
     irq_unlock(key);
 }
@@ -177,6 +189,7 @@ void drv_ktimer_set_expiry(ktime_tick_t expiry)
 void SysTick_Handler(void)
 {
     ktime_tick_t now, expiry, timeout;
+    uint32_t cvr;
     int key;
 
     key = irq_lock();
@@ -189,7 +202,8 @@ void SysTick_Handler(void)
     if (timeout > 0) {
         /* 当timeout小于可systick可计数的时间时，则设置reload */
         if (timeout <= SYSTICK_MAX_COUNT_CYCLES) {
-            systick_reset_reload((uint32_t)timeout);
+            cvr = drv_ctx.overflow - now;
+            systick_reset_reload((uint32_t)timeout, cvr);
         }
 
         irq_unlock(key);

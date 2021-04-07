@@ -157,13 +157,13 @@ static void on_led1_timer(void *cb_data, kevent_t *e)
         /* 打开LED */
         REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 1);
 
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(100));
+        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(1000));
         bpd_yield(1);
 
         /* 关闭LED */
         REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 0);
 
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(100));
+        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(1000));
         bpd_yield(2);
     }
 
@@ -182,13 +182,13 @@ static void on_led0_timer(void *cb_data, kevent_t *e)
         /* 打开LED */
         REG_WRITE_FIELD(GPIOD_BASE, LED0_OUT, 0);
 
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(500));
+        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(20));
         bpd_yield(1);
 
         /* 关闭LED */
         REG_WRITE_FIELD(GPIOD_BASE, LED0_OUT, 1);
 
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(500));
+        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(20));
         bpd_yield(2);
     }
 
@@ -201,6 +201,7 @@ static ktimer_event_t led1_timer = KTIMER_EVENT_STATIC_INIT(led1_timer, on_led1_
 
 int main()
 {
+    NVIC_SetPriority(PendSV_IRQn, 15);
     /* 初始化systick驱动 */
     cortex_m_systick_init();
 
@@ -218,8 +219,8 @@ int main()
                             GPIO_F_PIN8_CFG,  GPIO_PIN_CFG_OUT_PULL);
 
     /* 启动LED闪烁定时器 */
-    ktimer_start_ms(&led0_timer, 300);
-    ktimer_start_ms(&led1_timer, 300);
+    ktimer_start_ms(&led1_timer, 100);
+    ktimer_start_ms(&led0_timer, 250);
 
     while (1);
 }
