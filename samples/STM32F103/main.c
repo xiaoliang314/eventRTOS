@@ -149,25 +149,11 @@
 static void on_led1_timer(void *cb_data, kevent_t *e)
 {
     ktimer_event_t *timer = (ktimer_event_t*)e;
-    uint8_t *bpd = &e->bp;
+    e->bp++;
 
-    bpd_begin(2);
-
-    while (1) {
-        /* 打开LED */
-        REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 1);
-
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(1000));
-        bpd_yield(1);
-
-        /* 关闭LED */
-        REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, 0);
-
-        ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(1000));
-        bpd_yield(2);
-    }
-
-    bpd_end();
+    /* 设置LED */
+    REG_WRITE_FIELD(GPIOA_BASE, LED1_OUT, (e->bp & 1));
+    ktimer_start_expiry(timer, ktimer_expiry_get(timer) + ktime_ms_to_tick(1000));
 }
 
 /* LED闪烁定时器：频率2Hz */
