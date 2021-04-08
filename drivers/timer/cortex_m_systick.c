@@ -105,17 +105,16 @@ static void systick_reset_reload(uint32_t reload, uint32_t old_cvr)
     cvr1 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
     countflag = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_F_COUNTFLAG);
     cvr2 = REG_READ_FIELD(SYSTICK_BASE, SYSTICK_R_CVR);
-    /* 以当前读取的CVR为基准调整reload，稳定耗时6个cycles左右 */
+    /* 以当前读取的CVR为基准调整reload，耗时6个cycles左右 */
     diff_cvr = old_cvr - cvr2;
     fix_reload = diff_cvr >> 31;
     fix_reload *= old_reload;
     reload -= diff_cvr;
-    reload -= 1;
+    reload -= 1 + 11;
     reload += fix_reload;
 
-    /* 设置新的reload作为超时时间，稳定耗时2cycles */
+    /* 设置新的reload作为超时时间，并写任意值将CVR清零，耗时4个cycles左右 */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_RELOAD, reload);
-    /* 设置任意值将CVR清零 */
     REG_WRITE_FIELD(SYSTICK_BASE, SYSTICK_R_CVR, cvr2);
 
     /* 读取CSR寄存器确保清除COUNTFLAG */
@@ -129,10 +128,9 @@ static void systick_reset_reload(uint32_t reload, uint32_t old_cvr)
 
     overflow -= cvr2;
 
-    /* 计入新的RELOAD
-     * 新的超时在CVR清零时生效，在cvr2与CVR清零之间有8个cycles的延时，将其一起计入
-     */
-    overflow += reload + 8;
+    /* 新的超时在CVR清零时生效，在cvr2与CVR清零之间有10个cycles的延时，读cvr2操作算1个cycles，
+     * 共11个cycles，将其一起计入 */
+    overflow += reload + 11;
 
     drv_ctx.overflow = overflow;
 }
