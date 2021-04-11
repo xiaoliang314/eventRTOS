@@ -183,7 +183,7 @@ static void on_led0_timer(void *cb_data, kevent_t *e)
 
 /* 定义两个定时器 */
 static ktimer_event_t led0_timer = KTIMER_EVENT_STATIC_INIT(led0_timer, on_led0_timer, 0, KEVENT_PRIORITY_LOWER_GROUP);
-static ktimer_event_t led1_timer = KTIMER_EVENT_STATIC_INIT(led1_timer, on_led1_timer, 0, KEVENT_PRIORITY_LOWER_GROUP);
+static ktimer_event_t led1_timer = KTIMER_EVENT_STATIC_INIT(led1_timer, on_led1_timer, 0, KEVENT_PRIORITY_MIDDLE_GROUP);
 
 int main()
 {

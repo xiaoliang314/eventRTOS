@@ -5,9 +5,6 @@
 #ifndef __INCLUDE_BASES_H__
 #define __INCLUDE_BASES_H__
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <compiler.h>
 
 /* 通过类型、成员名计算成员的相对偏移 */
